@@ -3,21 +3,16 @@ import numpy as np
 import math 
 from random import choice
 import statistics 
+import time
 
-startingSudoku = """
-                    090650000
-                    000092601
-                    760000290
-                    408005000
-                    000279458
-                    000004000
-                    040000100
-                    080906034
-                    500040907
-                    
-                """
 
-sudoku = np.array([[int(i) for i in line] for line in startingSudoku.split()])
+startingSudoku = []
+print("Enter the values for each row below (input 0 for blank spaces of the puzzle)\n")  
+for i in range(9):
+    row = input("{}: ".format(i+1))
+    startingSudoku.append([int(i) for i in row])
+
+sudoku = np.array(startingSudoku)
 
 def PrintSudoku(sudoku):
     print("\n")
@@ -30,6 +25,7 @@ def PrintSudoku(sudoku):
                 line += "| "
             line += str(sudoku[i,j])+" "
         print(line)
+        
 
 def FixSudokuValues(fixed_sudoku):
     for i in range (0,9):
@@ -107,8 +103,6 @@ def ChooseNewState (currentSudoku, fixedSudoku, listOfBlocks, sigma):
     boxesToCheck = proposal[1]
     currentCost = CalculateNumberOfErrorsRowColumn(boxesToCheck[0][0], boxesToCheck[0][1], currentSudoku) + CalculateNumberOfErrorsRowColumn(boxesToCheck[1][0], boxesToCheck[1][1], currentSudoku)
     newCost = CalculateNumberOfErrorsRowColumn(boxesToCheck[0][0], boxesToCheck[0][1], newSudoku) + CalculateNumberOfErrorsRowColumn(boxesToCheck[1][0], boxesToCheck[1][1], newSudoku)
-    # currentCost = CalculateNumberOfErrors(currentSudoku)
-    # newCost = CalculateNumberOfErrors(newSudoku)
     costDifference = newCost - currentCost
     rho = math.exp(-costDifference/sigma)
     if(np.random.uniform(1,0,1) < rho):
@@ -134,7 +128,6 @@ def CalculateInitialSigma (sudoku, fixedSudoku, listOfBlocks):
 
 
 def solveSudoku (sudoku):
-    f = open("demofile2.txt", "a")
     solutionFound = 0
     while (solutionFound == 0):
         decreaseFactor = 0.99
@@ -158,7 +151,6 @@ def solveSudoku (sudoku):
                 scoreDiff = newState[1]
                 score += scoreDiff
                 print(score)
-                f.write(str(score) + '\n')
                 if score <= 0:
                     solutionFound = 1
                     break
@@ -176,9 +168,31 @@ def solveSudoku (sudoku):
             if(CalculateNumberOfErrors(tmpSudoku)==0):
                 PrintSudoku(tmpSudoku)
                 break
-    f.close()
     return(tmpSudoku)
 
+class Stopwatch:
+    
+    def _init_(self):
+        self.start_time = None
+        self.end_time = None
+
+    def start(self):
+        self.start_time = time.time()
+        
+    def stop(self):
+        self.end_time = time.time()
+        elapsed_time = self.end_time - self.start_time
+        print(f"Elapsed time {elapsed_time:0.2f} seconds")
+
+    def elapsed_time(self):
+        if self.start_time and self.end_time:
+            return self.end_time - self.start_time
+        else:
+            return None
+    
+stopwatch = Stopwatch()
+stopwatch.start()
 solution = solveSudoku(sudoku)
 print(CalculateNumberOfErrors(solution))
+stopwatch.stop()
 PrintSudoku(solution)
